@@ -14,29 +14,26 @@ builder.Services.AddControllers();
 
 
 var databaseConnectionString = builder.Configuration.GetConnectionString("ConnectionString");
-builder.Services.AddShardingDbContext<DemoDBContext>().UseRouteConfig(routeConfigure =>
-{
-    routeConfigure.AddShardingTableRoute<FileReferencesMonthVirtualTableRoute>();
+//builder.Services.AddShardingDbContext<DemoDBContext>().UseRouteConfig(routeConfigure =>
+//{
+//    routeConfigure.AddShardingTableRoute<FileReferencesMonthVirtualTableRoute>();
 
-}).UseConfig(shardingConfigure =>
-{
-    //当查询无法匹配到对应的路由是否抛出异常 true表示抛出异常 false表示返回默认值
-    shardingConfigure.ThrowIfQueryRouteNotMatch = false;
+//}).UseConfig(shardingConfigure =>
+//{
+//    //当查询无法匹配到对应的路由是否抛出异常 true表示抛出异常 false表示返回默认值
+//    shardingConfigure.ThrowIfQueryRouteNotMatch = false;
 
-    /*
-     1.设置并发查询时最大连接数。设置为4是基于按年划分4个季度，每一组执行并发查询4个表即按年查询，总共消耗4个连接。组数量=分区表总数 / 并发查询最大连接数。
-     2.解释：当分区表总数10，按4个并发查询后分组，一共3组：第一第二组包含4个查询，第三组：2个查询，组之间串行查询。
-     */
-    shardingConfigure.MaxQueryConnectionsLimit = builder.Configuration.GetValue<int>("MaxQueryConnectionsLimit");
+//    shardingConfigure.MaxQueryConnectionsLimit = builder.Configuration.GetValue<int>("MaxQueryConnectionsLimit");
 
-    shardingConfigure.UseShardingQuery((connectionString, builder) => builder.UseNpgsql(connectionString));
-    shardingConfigure.UseShardingTransaction((connection, builder) => builder.UseNpgsql(connection));
-    shardingConfigure.UseShardingMigrationConfigure((configure) => configure.ReplaceService<IMigrationsSqlGenerator, ShardingPostgreSqlMigrationsSqlGenerator>());
-    shardingConfigure.AddDefaultDataSource(Guid.NewGuid().ToString("n"), databaseConnectionString);
-}).AddShardingCore();
+//    shardingConfigure.UseShardingQuery((connectionString, builder) => builder.UseSqlServer(connectionString));
+//    shardingConfigure.UseShardingTransaction((connection, builder) => builder.UseSqlServer(connection));
+//    shardingConfigure.UseShardingMigrationConfigure((configure) => configure.ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator>());
+//    shardingConfigure.AddDefaultDataSource(Guid.NewGuid().ToString("n"), databaseConnectionString);
+//}).AddShardingCore();
 
 builder.Services.AddDbContext<DemoDBContext>(options => options.UseNpgsql(databaseConnectionString));
 
+//builder.Services.AddDbContext<DemoDBContext>(options => options.UseSqlServer(databaseConnectionString));
 
 builder.Host.UseSerilog((hostingContext, services, loggerConfiguration) =>
 {

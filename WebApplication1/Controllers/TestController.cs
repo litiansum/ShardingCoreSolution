@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.EF;
+using WebApplication1.Entities;
 
 namespace WebApplication1.Controllers
 {
@@ -18,22 +19,10 @@ namespace WebApplication1.Controllers
         }
 
 
-        [HttpGet]
-        public async Task<object?> Get(string referenceId)
+        [HttpPost]
+        public async Task<IEnumerable<FileReference>> Get(IEnumerable<string> referenceIds)
         {
-            var queryable = from references in _context.FileReferences
-                            join files in _context.FileInfos on references.FileInfoId equals files.Id
-                            where references.ReferenceId == referenceId
-                            select new
-                            {
-                                references.ReferenceId,
-                                Id = references.Id,
-                                references.CreateTime,
-                                references.LastUpdateTime,
-                                FileInfo = files
-                            };
-
-            return await queryable.AsNoTracking().FirstOrDefaultAsync();
+            return await _context.FileReferences.Where(i => referenceIds.Contains(i.ReferenceId)).AsNoTracking().ToListAsync();
         }
     }
 }

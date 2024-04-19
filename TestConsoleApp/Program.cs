@@ -1,27 +1,43 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Net.Http.Json;
 using static System.Net.WebRequestMethods;
 var httpClient = new HttpClient();
 
-string url = "http://localhost:5000/Test?referenceId=9eeb44437ab9420e9018f390a987b432";
-
-List<Task> tasks = new List<Task>();
-var count = Environment.ProcessorCount * 5;
-for (int i = 0; i < count; i++)
+try
 {
-    var task = Task.Run(async () =>
+    string url = "http://localhost:5240/Test";
+
+    List<string> request = new List<string>()
+{
+    "9eeb44437ab9420e9018f390a987b432",
+    "150502308059869184",
+    "150504739355291648",
+    "160923754242306048"
+};
+    int count = int.Parse(Console.ReadLine() ?? "0");
+    while (request.Count < count)
     {
-        while (true)
-        {
-            var response = await httpClient.GetAsync(url);
+        request.Add(Guid.NewGuid().ToString("n"));
+    }
 
-            Console.WriteLine($"Thread:{Thread.CurrentThread.ManagedThreadId}:" + response.IsSuccessStatusCode);
-        }
-    });
+    try
+    {
 
-    tasks.Add(task);
+        var response = await httpClient.PostAsJsonAsync(url, request);
+
+        Console.WriteLine($"Thread:{Thread.CurrentThread.ManagedThreadId}:" + response.IsSuccessStatusCode);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+
+    Console.ReadKey();
+
 }
+catch (Exception ex)
+{
 
-await Task.WhenAll(tasks);
-
-Console.ReadKey();
+    Console.WriteLine(ex.Message);
+}
